@@ -2,7 +2,6 @@ class Battle < ActiveRecord::Base
 
   has_many :entities
 
-
   def self.random_monster
     roll = Random.new
     monster_roll = roll.rand(0..4)
@@ -35,9 +34,18 @@ class Battle < ActiveRecord::Base
 
 
   def fetch_entities
-    monster = Entity.create(name: 'Roshan', level: 1, health: 100,  location_x: 1, location_y: 1, pc?: false, alive?: true)
-    self.entities.push(Entity.where(pc?: true))
-    self.entities.push(monster)
+    @entity0 = Entity.where(pc?: true)
+    @entity1 = Battle.random_monster
+    self.entities.push(@entity0)
+    self.entities.push(@entity1)
+  end
+
+  def attack(attacker, target)
+    target.take_damage(attacker.attack)
+  end
+
+  def flee
+    self.update(active?: false)
   end
 
 
