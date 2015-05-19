@@ -1,5 +1,6 @@
 require 'gosu'
 require './lib/floor'
+require './lib/entity_paint'
 
 class GameWindow < Gosu::Window
   def initialize
@@ -10,6 +11,10 @@ class GameWindow < Gosu::Window
     @floor = Floor.new({:width => 25, :height => 25}) # call toby's mapmaker
     @floor.create_boundaries
     @scaler = 16 #scales the size of the image tiles to account for image size
+
+    @entity_paint = Entity_paint.new(self)
+    @entity_paint.warp(13, 13)
+
   end
 
   def draw
@@ -22,7 +27,10 @@ class GameWindow < Gosu::Window
         end
       end
     end
+    @entity_paint.draw
+
   end
+
 end
 
 window = GameWindow.new
