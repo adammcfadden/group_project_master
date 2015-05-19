@@ -5,23 +5,23 @@ class Floor
   def initialize (attributes)
     @width = attributes[:width]
     @height = attributes[:height]
-    @map = Array.new(@height)
-    @map.each_index() do |row_index|
-      @map[row_index] = Array.new(@width, false)
+    @map = Array.new(@width)
+    @map.each_index() do |index|
+      @map[index] = Array.new(@height, false)
     end
   end
 
   def fill_map (with_solid)
-    @map.each_index() do |y|
-      @map[y].each_index() do |x|
+    @map.each_index() do |x|
+      @map[x].each_index() do |y|
         set_is_solid(x, y, with_solid)
       end
     end
   end
 
   def create_boundaries
-    @map.each_index() do |y|
-      @map[y].each_index() do |x|
+    @map.each_index() do |x|
+      @map[x].each_index() do |y|
         if(x == 0 || y == 0 || x == @width-1 || y == @height-1)
           set_is_solid(x, y, true)
         end
@@ -45,45 +45,55 @@ class Floor
     end
   end
 
-#   def drunk_walk_no_backtrack (steps, is_filling)
-#     backtrack_map = Floor.new({:width => @width, :height => @height})
-#     x = (@width/2).floor()
-#     y = (@height/2).floor()
-#     backtrack_map.set_is_solid(x, y, true)
-#     set_is_solid(x, y, is_filling)
-#     (steps-1).times() do
-#       new_coords = random_step(x, y)
-#       while(!is_within_map?(new_coords[:x], new_coords[:y]) || (!is_trapped?(x, y, backtrack_map) && backtrack_map.is_solid?(new_coords[:x], new_coords[:y]) )) do
-#         new_coords = random_step(x, y)
-#       end
-#       x = new_coords[:x]
-#       y = new_coords[:y]
-#       backtrack_map.set_is_solid(x, y, true)
-#       set_is_solid(x, y, is_filling)
-# # binding.pry
-#     end
-#   end
+  # The cellular automata algorithim: http://www.roguebasin.com/index.php?title=Cellular_Automata_Method_for_Generating_Random_Cave-Like_Levels
 
-  def is_trapped? (current_x, current_y, backtrack_map)
-    trapped = true
-    x = current_x
-    y = current_y - 1
-    if(is_within_map?(x, y) && !backtrack_map.is_solid?(x,y))
-      trapped = false
+  def create_caverns
+    randomize_map()
+    iterate_automata()
+    iterate_automata()
+    drunk_walk(500, false)
+    iterate_automata()
+    create_boundaries()
+  end
+
+  def randomize_map
+    @map.each_index() do |x|
+      @map[x].each_index() do |y|
+        set_is_solid(x, y, rand(2) == 0)
+      end
     end
-    y = current_y + 1
-    if(is_within_map?(x, y) && !backtrack_map.is_solid?(x,y))
-      trapped = false
-    x = current_x - 1
+  end
+
+  def iterate_automata
+    temp_floor = self
+    (@height).times do |y|
+      (@width).times do |x|
+        if(empty_neighbors(x, y, 1) >= 5)
+          temp_floor.set_is_solid(x, y, true)
+        elsif(empty_neighbors(x, y, 2) <= 6)
+          temp_floor.set_is_solid(x, y, true)
+        else
+          temp_floor.set_is_solid(x, y, false)
+        end
+      end
     end
-    if(is_within_map?(x, y) && !backtrack_map.is_solid?(x,y))
-      trapped = false
+    @map = temp_floor.map
+  end
+
+  def empty_neighbors (cell_x, cell_y, radius)
+    empty_neighbors = 0
+    x = cell_x - radius
+    while(x <= cell_x + radius)
+      y = cell_y - radius
+      while(y <= cell_y + radius)
+        if(is_within_map?(x, y) && !is_solid?(x, y))
+          empty_neighbors += 1
+        end
+        y += 1
+      end
+      x += 1
     end
-    x = current_x + 1
-    if(is_within_map?(x, y) && !backtrack_map.is_solid?(x,y))
-      trapped = false
-    end
-    return trapped
+    return empty_neighbors
   end
 
   def random_step (x, y)
@@ -119,12 +129,12 @@ class Floor
   end
 
   def print_map
-    @map.each_index() do |y|
-      @map[y].each_index() do |x|
-        if(@map[x][y])
-          print('#')
+    (@height).times do |y|
+      (@width).times do |x|
+        if(is_solid?(x, y))
+          print("#")
         else
-          print('.')
+          print(".")
         end
       end
       print("\n")

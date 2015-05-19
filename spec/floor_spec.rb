@@ -3,9 +3,21 @@ require('floor')
 
 describe(Floor) do
 
+  PRINT_MAPS = true
+
   describe('#initialize') do
     it("Creates an empty floor.") do
       test_floor = Floor.new({:width => 10, :height => 10})
+      expect(test_floor.map[4][4]).to(eq(false))
+    end
+  end
+
+  describe('#fill_map') do
+    it("Fills the whole map as either solid or empty space.") do
+      test_floor = Floor.new({:width => 10, :height => 10})
+      test_floor.fill_map(true)
+      expect(test_floor.map[4][4]).to(eq(true))
+      test_floor.fill_map(false)
       expect(test_floor.map[4][4]).to(eq(false))
     end
   end
@@ -22,35 +34,61 @@ describe(Floor) do
     end
   end
 
-  describe('#fill_map') do
-    it("Fills the whole map as either solid or empty space.") do
-      test_floor = Floor.new({:width => 10, :height => 10})
-      test_floor.fill_map(true)
-      expect(test_floor.map[4][4]).to(eq(true))
-      test_floor.fill_map(false)
-      expect(test_floor.map[4][4]).to(eq(false))
-    end
-  end
-
   describe('#drunk_walk') do
     it("Performs the drunkard's walk generation algorithim, clearing or filling for a given number of steps.") do
-      test_floor = Floor.new({:width => 20, :height => 20})
+      test_floor = Floor.new({:width => 80, :height => 20})
       test_floor.fill_map(true)
-      steps = 100
+      steps = 1000
       test_floor.drunk_walk(steps, false)
       test_floor.create_boundaries()
-      print("\n\nDrunkard's Walk [#{steps} steps]:\n\n")
-      test_floor.print_map()
-      print("\n")
+      if(PRINT_MAPS)
+        print("\n\nDrunkard's Walk [#{steps} steps]:\n\n")
+        test_floor.print_map()
+        print("\n")
+      end
     end
   end
 
-  describe('#is_trapped?') do
-    it("Returns true if there are no empty spaces above, below, or to the sides of the specified coordinate in a given floor.") do
-      test_floor = Floor.new({:width => 20, :height => 20})
+  describe('#create_caverns') do
+    it("Creates a system of caverns using cellular automata and drunken walking.") do
+      test_floor = Floor.new({:width => 80, :height => 20})
+      test_floor.create_caverns()
+      if(PRINT_MAPS)
+        print("\n\nCellular Automata:\n\n")
+        test_floor.print_map()
+        print("\n")
+      end
+    end
+  end
+
+  describe('#randomize_map') do
+    it("Randomizes each cell with an equal probablity of being empty or solid.") do
+      test_floor = Floor.new({:width => 80, :height => 20})
+      test_floor.randomize_map()
+      if(PRINT_MAPS)
+        print("\n\nRandom Map:\n\n")
+        test_floor.print_map()
+        print("\n")
+      end
+    end
+  end
+
+  describe('#empty_neighbors') do
+    it("Returns the number of empty cells surrounding a given cell within a given radius (including the given cell).") do
+      test_floor = Floor.new({:width => 10, :height => 10})
+      expect(test_floor.empty_neighbors(4, 4, 1)).to(eq(9))
       test_floor.fill_map(true)
-      test_floor.set_is_solid(4, 4, false)
-      expect(test_floor.is_trapped?(4, 4, test_floor)).to(eq(true))
+      expect(test_floor.empty_neighbors(4, 4, 3)).to(eq(0))
+    end
+  end
+
+  describe('#random_step') do
+    it("Takes a coordinate as a pair of numbers and returns a random adjacent coordinate as a hash.") do
+      test_floor = Floor.new({:width => 10, :height => 10})
+      x = 8
+      y = 3
+      coords = test_floor.random_step(x, y)
+      expect(x != coords[:x] || x != coords[:y]).to(eq(true))
     end
   end
 
