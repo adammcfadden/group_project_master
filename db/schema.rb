@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150520172735) do
+ActiveRecord::Schema.define(version: 20150520180927) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -33,6 +33,8 @@ ActiveRecord::Schema.define(version: 20150520172735) do
     t.integer "xp"
     t.integer "battle_id"
     t.integer "str"
+    t.string  "image_path"
+    t.boolean "entity_drawn?"
   end
 
   create_table "entities_weapons", id: false, force: :cascade do |t|
@@ -49,8 +51,6 @@ ActiveRecord::Schema.define(version: 20150520172735) do
     t.integer "max_power"
     t.integer "min_power"
     t.boolean "isequipped?"
-    t.string  "image_path"
-    t.boolean "entity_drawn?"
   end
 
 end

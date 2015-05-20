@@ -2,23 +2,19 @@ require 'gosu'
 require 'sinatra/activerecord'
 require './lib/floor'
 require './lib/entity'
-require 'pry'
 
-BOARD_WIDTH = 40
-BOARD_HEIGHT = 80
+BOARD_WIDTH = 100
+BOARD_HEIGHT = 100
 TICKS_PER_STEP = 5
 
 class WorldWindow < Gosu::Window
   def initialize
     super(BOARD_WIDTH*16, BOARD_HEIGHT*16, false) #map size
-    self.caption = "Render Map" #window title
+    self.caption = "Elven Sword!" #window title
     @floor_image = Gosu::Image.new(self, "./media/floor.png", false) # image tile 1
     @wall_image = Gosu::Image.new(self, "./media/wall.gif", false) # image tile 2
     @floor = Floor.new({:width => BOARD_WIDTH, :height => BOARD_HEIGHT}) # call toby's mapmaker
-    @floor.fill_map(true)
-    steps = 4000
-    @floor.drunk_walk(steps ,false)
-    @floor.create_boundaries
+    @floor.generate_map
     @scaler = 16 #scales the size of the image tiles to account for image size
     @countdown = 0 #is used in #update to control player speed
     @player = Entity.create(name: 'Dirge', level: 1, xp: 0, health: 100,  location_x: 1, location_y: 1, pc?: true, image_path: 'media/fox.png', alive?: true, entity_drawn?: false)
